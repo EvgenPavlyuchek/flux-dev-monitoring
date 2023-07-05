@@ -4,31 +4,31 @@
 
 Monitoring on K8s cluster with Flux - OpenTelemetry + Prometheus + Fluentbit + Grafana + Loki
 
-## 1 option
+### 1 option
 We can run the monitoring stack locally with application using docker-compose.
 ```bash
-  --docker-compose -f otel/docker-compose.yaml up
+  docker-compose -f otel/docker-compose.yaml up
 ```
 
-## 2 option
+### 2 option
 We can convert our docker-compose to yaml files for deploying them in flux or with kubectl command
 ```bash
-  --cd otel
-  --kompose convert
+  cd otel
+  kompose convert
 ```
 Modificated result of such convertation we can see in folder cluster/demo.
 Ready for deployming within flux.
 
-## 3 option
+### 3 option
 
 Install following the official instructions - [Flux monitoring with Prometheus](https://fluxcd.io/flux/guides/monitoring/)
 
-## Requirements
+### Requirements
 
 k8s
 Flux
 
-## Installation
+### Installation
 To install the monitoring stack with flux, first register the Git repository on your cluster:
 
 ```bash
@@ -105,7 +105,7 @@ flux create kustomization otel \
   --wait
 ```
 
-## Grafana
+### Grafana
 
 ```bash
 kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3000:80
