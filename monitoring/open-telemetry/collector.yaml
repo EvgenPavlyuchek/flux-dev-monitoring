@@ -2,7 +2,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: otel
-  namespace: opentelemetry
+  namespace: monitoring
 spec:
   config: |
     receivers:
@@ -27,10 +27,13 @@ spec:
       pipelines:
         logs:
           receivers: [otlp]
-          exporters: [loki]
+          processors: []
+          exporters: [logging]
         traces:
           receivers: [otlp]
+          processors: []
           exporters: [logging]
         metrics:
           receivers: [otlp]
-          exporters: [logging,prometheus]
+          processors: []
+          exporters: [logging, prometheus]
