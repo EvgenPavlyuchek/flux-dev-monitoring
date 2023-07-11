@@ -1,54 +1,73 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: fluentbit
-  namespace: demo
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
   labels:
     io.kompose.service: fluentbit
+  name: fluentbit
+  namespace: default
 spec:
-  containers:
-    - name: fluentbit
-      image: fluent/fluent-bit:latest
-      ports:
-        - containerPort: 3001
-      resources: {}
-      volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: fluentbit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      labels:
+        io.kompose.service: fluentbit
+    spec:
+      containers:
+        - image: fluent/fluent-bit:latest
+          name: fluentbit
+          ports:
+            - containerPort: 3001
+          resources: {}
+          volumeMounts:
+            - name: lua-volume
+              mountPath: /fluent-bit/bin/docker-metadata.lua
+              subPath: docker-metadata.lua
+            - name: config-volume
+              mountPath: /fluent-bit/etc/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: var-log-containers
+              mountPath: /var/log/containers
+              readOnly: true
+            - name: var-lib-docker
+              mountPath: /var/lib/docker
+              readOnly: true
+            - name: var-run-docker
+              mountPath: /var/run/docker.sock
+      restartPolicy: Always
+      volumes:
         - name: lua-volume
-          mountPath: /fluent-bit/bin/docker-metadata.lua
-          subPath: docker-metadata.lua
+          configMap:
+            name: fluentbit-lua-config
         - name: config-volume
-          mountPath: /fluent-bit/etc/fluent-bit.conf
-          subPath: fluent-bit.conf
+          configMap:
+            name: fluentbit-config
         - name: var-log-containers
-          mountPath: /var/log/containers
-          readOnly: true
+          hostPath:
+            path: /var/log/containers
         - name: var-lib-docker
-          mountPath: /var/lib/docker
-          readOnly: true
+          hostPath:
+            path: /var/lib/docker
         - name: var-run-docker
-          mountPath: /var/run/docker.sock
-  volumes:
-    - name: lua-volume
-      configMap:
-        name: fluentbit-lua-config
-    - name: config-volume
-      configMap:
-        name: fluentbit-config
-    - name: var-log-containers
-      hostPath:
-        path: /var/log/containers
-    - name: var-lib-docker
-      hostPath:
-        path: /var/lib/docker
-    - name: var-run-docker
-      hostPath:
-        path: /var/run/docker.sock
+          hostPath:
+            path: /var/run/docker.sock
+status: {}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentbit-lua-config
-  namespace: demo
+  namespace: default
   labels:
     io.kompose.service: fluentbit
 data:
@@ -122,7 +141,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentbit-config
-  namespace: demo
+  namespace: default
   labels:
     io.kompose.service: fluentbit
 data:
@@ -169,10 +188,11 @@ metadata:
     kompose.cmd: kompose convert
     kompose.version: 1.26.0 (40646f47)
   name: fluentbit
-  namespace: demo
+  namespace: default
 spec:
   ports:
     - name: "3001"
+      protocol: TCP
       port: 3001
       targetPort: 3001
   selector:
